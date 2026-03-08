@@ -1,20 +1,17 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Attendance} from "../src/Attendance.sol";
+import {PredictionMarket} from "../src/PredictionMarket.sol";
 
-/**
- * forge script Deploy --rpc-url "https://sepolia.base.org" --account dev --sender $SENDER  --broadcast -vvvv --verify --verifier-url "https://api-sepolia.basescan.org/api" --etherscan-api-key $BASESCAN_API_KEY
- */
+/// @notice Deploy PredictionMarket V1 (ETH-based).
+/// Usage: forge script Deploy --account dev --rpc-url https://sepolia.base.org --broadcast --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY
 contract Deploy is Script {
-    function run() public {
+    function run() external {
         vm.startBroadcast();
 
-        // address owner = msg.sender;
-        address owner = 0x0BFc799dF7e440b7C88cC2454f12C58f8a29D986; // EOA
-        // address owner = 0x2B654aB28f82a2a4E4F6DB8e20791E5AcF4125c6; // webapp wallet
-        new Attendance(owner);
+        PredictionMarket market = new PredictionMarket(msg.sender);
+        console.log("PredictionMarket deployed to:", address(market));
 
         vm.stopBroadcast();
     }
