@@ -33,7 +33,10 @@ contract PredictionMarket is IPredictionMarket {
     mapping(uint256 => mapping(address => bool)) public hasVoted;
 
     // === MODIFIERS ===
-    // TODO: Define an onlyOwner modifier that reverts with NotOwner if msg.sender != owner
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert NotOwner(msg.sender, owner);
+        _;
+    }
 
     // === CONSTRUCTOR ===
     constructor(address owner_) {
@@ -42,15 +45,13 @@ contract PredictionMarket is IPredictionMarket {
     }
 
     // === READ FUNCTIONS ===
-
     function totalMarkets() external view returns (uint256) {
-        // TODO: Return the number of markets created
-        revert("Not implemented");
+        return markets.length;
     }
 
     function getOdds(uint256 marketId) external view returns (uint256 yesPool, uint256 noPool) {
-        // TODO: Return the yesPool and noPool for the given market
-        revert("Not implemented");
+        Market storage m = markets[marketId];
+        return (m.yesPool, m.noPool);
     }
 
     function getMarket(uint256 marketId)
@@ -63,25 +64,44 @@ contract PredictionMarket is IPredictionMarket {
     }
 
     // === WRITE FUNCTIONS ===
-
-    function createMarket(string calldata question) external returns (uint256 marketId) {
-        // TODO: Only owner can create markets
-        // TODO: Push a new Market to the array and emit MarketCreated
-        revert("Not implemented");
+    function createMarket(string calldata question) external onlyOwner returns (uint256 marketId) {
+        marketId = markets.length;
+        markets.push(Market({
+            question: question,
+            yesPool: 0,
+            noPool: 0,
+            resolved: false,
+            outcome: false
+        }));
+        emit MarketCreated(marketId, question);
     }
 
     function vote(uint256 marketId, bool side) external payable {
-        // TODO: Follow the CEI pattern:
-        //   CHECKS  — market not resolved, user hasn't voted, amount > 0
-        //   EFFECTS — mark voter, update pool
-        //   INTERACTIONS — emit Voted event
-        revert("Not implemented");
+        // CHECKS
+        Market storage m = markets[marketId];
+        if (m.resolved) revert MarketAlreadyResolved(marketId);
+        if (hasVoted[marketId][msg.sender]) revert AlreadyVoted(marketId, msg.sender);
+        if (msg.value == 0) revert ZeroAmount();
+
+        // EFFECTS
+        hasVoted[marketId][msg.sender] = true;
+        if (side) {
+            m.yesPool += msg.value;
+        } else {
+            m.noPool += msg.value;
+        }
+
+        // INTERACTIONS
+        emit Voted(marketId, msg.sender, side, msg.value);
     }
 
-    function resolveMarket(uint256 marketId, bool outcome) external {
-        // TODO: Only owner can resolve
-        // TODO: Market must not already be resolved
-        // TODO: Set resolved = true and outcome, emit MarketResolved
-        revert("Not implemented");
+    function resolveMarket(uint256 marketId, bool outcome) external onlyOwner {
+        Market storage m = markets[marketId];
+        if (m.resolved) revert MarketAlreadyResolved(marketId);
+
+        m.resolved = true;
+        m.outcome = outcome;
+
+        emit MarketResolved(marketId, outcome);
     }
 }
