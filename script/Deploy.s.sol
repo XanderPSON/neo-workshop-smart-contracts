@@ -8,9 +8,10 @@ import {PredictionMarket} from "../src/PredictionMarket.sol";
 /// Usage: forge script Deploy --account dev --rpc-url https://sepolia.base.org --broadcast --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY
 contract Deploy is Script {
     function run() external {
-        vm.startBroadcast();
+        address deployer = msg.sender;
+        vm.startBroadcast(deployer);
 
-        PredictionMarket market = new PredictionMarket(msg.sender);
+        PredictionMarket market = new PredictionMarket(deployer);
         console.log("PredictionMarket deployed to:", address(market));
 
         vm.stopBroadcast();
