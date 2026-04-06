@@ -58,6 +58,18 @@ interface IPredictionMarket {
     /// @return noPool Total wei staked on NO.
     function getOdds(uint256 marketId) external view returns (uint256 yesPool, uint256 noPool);
 
+    /// @notice Returns the full details of a market.
+    /// @param marketId The ID of the market to query.
+    /// @return question The market's question.
+    /// @return yesPool Total wei staked on YES.
+    /// @return noPool Total wei staked on NO.
+    /// @return resolved Whether the market has been resolved.
+    /// @return outcome The resolution outcome (only meaningful if resolved is true).
+    function getMarket(uint256 marketId)
+        external
+        view
+        returns (string memory question, uint256 yesPool, uint256 noPool, bool resolved, bool outcome);
+
     /// @notice Returns whether a specific address has voted on a market.
     /// @param marketId The ID of the market.
     /// @param voter The address to check.

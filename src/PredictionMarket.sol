@@ -53,6 +53,15 @@ contract PredictionMarket is IPredictionMarket {
         revert("Not implemented");
     }
 
+    function getMarket(uint256 marketId)
+        external
+        view
+        returns (string memory question, uint256 yesPool, uint256 noPool, bool resolved, bool outcome)
+    {
+        // TODO: Return all fields of the given market
+        revert("Not implemented");
+    }
+
     // === WRITE FUNCTIONS ===
 
     function createMarket(string calldata question) external returns (uint256 marketId) {
