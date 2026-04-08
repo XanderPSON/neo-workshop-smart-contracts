@@ -38,9 +38,6 @@ interface IPredictionMarket {
     /// @notice Thrown when trying to interact with a resolved market.
     error MarketAlreadyResolved(uint256 marketId);
 
-    /// @notice Thrown when a user tries to vote twice on the same market.
-    error AlreadyVoted(uint256 marketId, address voter);
-
     /// @notice Thrown when a vote is placed with zero ETH.
     error ZeroAmount();
 
@@ -73,8 +70,14 @@ interface IPredictionMarket {
     /// @notice Returns whether a specific address has voted on a market.
     /// @param marketId The ID of the market.
     /// @param voter The address to check.
-    /// @return True if the address has voted, false otherwise.
+    /// @return True if the address has voted (staked any amount), false otherwise.
     function hasVoted(uint256 marketId, address voter) external view returns (bool);
+
+    /// @notice Returns the total amount a specific address has staked on a market.
+    /// @param marketId The ID of the market.
+    /// @param voter The address to check.
+    /// @return The total wei staked by this address on this market.
+    function amountVoted(uint256 marketId, address voter) external view returns (uint256);
 
     // === WRITE FUNCTIONS ===
 
@@ -83,10 +86,10 @@ interface IPredictionMarket {
     /// @return marketId The ID of the newly created market.
     function createMarket(string calldata question) external returns (uint256 marketId);
 
-    /// @notice Places a vote on a market by sending ETH.
+    /// @notice Places a vote on a market by sending ETH. Can be called multiple times.
     /// @dev Must follow the Checks-Effects-Interactions (CEI) pattern.
-    ///      - CHECKS: Market not resolved, user hasn't voted, amount > 0
-    ///      - EFFECTS: Mark voter, update pool
+    ///      - CHECKS: Market not resolved, amount > 0
+    ///      - EFFECTS: Track voter's cumulative stake, update pool
     ///      - INTERACTIONS: (ETH received via msg.value, no external call needed)
     /// @param marketId The ID of the market to vote on.
     /// @param side true = YES, false = NO.

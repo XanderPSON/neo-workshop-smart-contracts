@@ -18,7 +18,7 @@ contract PredictionMarket {
     address public owner;
     IERC20 public token;
     Market[] public markets;
-    mapping(uint256 => mapping(address => bool)) public hasVoted;
+    mapping(uint256 => mapping(address => uint256)) public amountVoted;
 
     event MarketCreated(uint256 indexed marketId, string question);
     event Voted(uint256 indexed marketId, address voter, bool side, uint256 amount);
@@ -26,7 +26,6 @@ contract PredictionMarket {
 
     error NotOwner(address sender, address owner);
     error MarketAlreadyResolved(uint256 marketId);
-    error AlreadyVoted(uint256 marketId, address voter);
     error ZeroAmount();
     error InsufficientAllowance(uint256 amount, uint256 allowance);
 
@@ -49,6 +48,10 @@ contract PredictionMarket {
         return (m.yesPool, m.noPool);
     }
 
+    function hasVoted(uint256 marketId, address voter) external view returns (bool) {
+        return amountVoted[marketId][voter] > 0;
+    }
+
     function createMarket(string calldata question) external onlyOwner returns (uint256 marketId) {
         marketId = markets.length;
         markets.push(Market({question: question, yesPool: 0, noPool: 0, resolved: false, outcome: false}));
@@ -60,13 +63,12 @@ contract PredictionMarket {
 
         // CHECKS
         if (m.resolved) revert MarketAlreadyResolved(marketId);
-        if (hasVoted[marketId][msg.sender]) revert AlreadyVoted(marketId, msg.sender);
         if (amount == 0) revert ZeroAmount();
         uint256 currentAllowance = token.allowance(msg.sender, address(this));
         if (currentAllowance < amount) revert InsufficientAllowance(amount, currentAllowance);
 
         // EFFECTS
-        hasVoted[marketId][msg.sender] = true;
+        amountVoted[marketId][msg.sender] += amount;
         if (side) {
             m.yesPool += amount;
         } else {

@@ -9,11 +9,11 @@ import {IPredictionMarket} from "./IPredictionMarket.sol";
 ///
 /// Your task: implement every function defined in IPredictionMarket.
 /// The interface file (src/IPredictionMarket.sol) is your spec — read it first.
-/// Run `forge test` to verify your implementation (all 12 tests should pass).
+/// Run `forge test` to verify your implementation (all tests should pass).
 ///
 /// Hints:
 ///   - Define a `Market` struct with: question, yesPool, noPool, resolved, outcome
-///   - Use a `Market[]` array and a nested mapping for vote tracking
+///   - Use a `Market[]` array and a nested mapping to track each voter's cumulative stake
 ///   - The constructor should accept an `owner_` address
 ///   - Use the CEI (Checks-Effects-Interactions) pattern in `vote()`
 ///   - Use the custom errors defined in IPredictionMarket (not require strings)
@@ -30,7 +30,8 @@ contract PredictionMarket is IPredictionMarket {
     // === STORAGE VARIABLES ===
     address public owner;
     Market[] public markets;
-    mapping(uint256 => mapping(address => bool)) public hasVoted;
+    // Nested mapping: marketId -> voter -> total amount staked
+    mapping(uint256 => mapping(address => uint256)) public amountVoted;
 
     // === MODIFIERS ===
     // TODO: Define an onlyOwner modifier that reverts with NotOwner if msg.sender != owner
@@ -70,10 +71,15 @@ contract PredictionMarket is IPredictionMarket {
         revert("Not implemented");
     }
 
+    function hasVoted(uint256 marketId, address voter) external view returns (bool) {
+        // TODO: Return true if the voter has staked any amount on this market
+        revert("Not implemented");
+    }
+
     function vote(uint256 marketId, bool side) external payable {
         // TODO: Follow the CEI pattern:
-        //   CHECKS  — market not resolved, user hasn't voted, amount > 0
-        //   EFFECTS — mark voter, update pool
+        //   CHECKS  — market not resolved, amount > 0
+        //   EFFECTS — track voter's cumulative stake, update pool
         //   INTERACTIONS — emit Voted event
         revert("Not implemented");
     }

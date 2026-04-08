@@ -21,8 +21,8 @@ contract PredictionMarket is IPredictionMarket {
 
     Market[] public markets;
 
-    // Nested mapping: marketId -> voter -> hasVoted
-    mapping(uint256 => mapping(address => bool)) public hasVoted;
+    // Nested mapping: marketId -> voter -> total amount staked
+    mapping(uint256 => mapping(address => uint256)) public amountVoted;
 
     // === MODIFIERS ===
     modifier onlyOwner() {
@@ -45,6 +45,19 @@ contract PredictionMarket is IPredictionMarket {
         return (m.yesPool, m.noPool);
     }
 
+    function getMarket(uint256 marketId)
+        external
+        view
+        returns (string memory question, uint256 yesPool, uint256 noPool, bool resolved, bool outcome)
+    {
+        Market storage m = markets[marketId];
+        return (m.question, m.yesPool, m.noPool, m.resolved, m.outcome);
+    }
+
+    function hasVoted(uint256 marketId, address voter) external view returns (bool) {
+        return amountVoted[marketId][voter] > 0;
+    }
+
     // === WRITE FUNCTIONS ===
     function createMarket(string calldata question) external onlyOwner returns (uint256 marketId) {
         marketId = markets.length;
@@ -58,11 +71,10 @@ contract PredictionMarket is IPredictionMarket {
 
         // CHECKS
         if (m.resolved) revert MarketAlreadyResolved(marketId);
-        if (hasVoted[marketId][msg.sender]) revert AlreadyVoted(marketId, msg.sender);
         if (amount == 0) revert ZeroAmount();
 
         // EFFECTS
-        hasVoted[marketId][msg.sender] = true;
+        amountVoted[marketId][msg.sender] += amount;
         if (side) {
             m.yesPool += amount;
         } else {

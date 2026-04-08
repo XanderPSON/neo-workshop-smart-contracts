@@ -73,15 +73,18 @@ contract PredictionMarketTest is Test {
         market.vote{value: 1 ether}(marketId, true);
     }
 
-    function test_vote_revert_ifAlreadyVoted() public {
+    function test_vote_allowsMultipleVotes() public {
         uint256 marketId = market.createMarket("Will BTC break ATH?");
 
         vm.prank(alice);
         market.vote{value: 1 ether}(marketId, true);
 
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(IPredictionMarket.AlreadyVoted.selector, marketId, alice));
-        market.vote{value: 1 ether}(marketId, false);
+        market.vote{value: 2 ether}(marketId, true);
+
+        (uint256 yesPool,) = market.getOdds(marketId);
+        assertEq(yesPool, 3 ether);
+        assertTrue(market.hasVoted(marketId, alice));
     }
 
     function test_vote_revert_ifZeroValue() public {
