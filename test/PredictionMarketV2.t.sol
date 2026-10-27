@@ -99,6 +99,27 @@ contract PredictionMarketV2Test is Test {
         assertEq(token.allowance(alice, address(market)), 0);
     }
 
+    function test_vote_revert_insufficientBalance_rollsBack() public {
+        address carol = address(0xCA201);
+        token.transfer(carol, 5 ether);
+
+        vm.startPrank(carol);
+        token.approve(address(market), 10 ether);
+        vm.expectRevert(abi.encodeWithSelector(ERC20.InsufficientBalance.selector, 10 ether, 5 ether));
+        market.vote(marketId, true, 10 ether);
+        vm.stopPrank();
+
+        // The whole transaction reverted, so the effects written before transferFrom roll back too.
+        (uint256 yesPool, uint256 noPool) = market.getOdds(marketId);
+        assertEq(yesPool, 0);
+        assertEq(noPool, 0);
+        assertEq(market.amountVoted(marketId, carol), 0);
+        assertFalse(market.hasVoted(marketId, carol));
+        assertEq(token.balanceOf(carol), 5 ether);
+        assertEq(token.balanceOf(address(market)), 0);
+        assertEq(token.allowance(carol, address(market)), 10 ether);
+    }
+
     function test_vote_revert_resolvedMarket() public {
         market.resolveMarket(marketId, true);
 

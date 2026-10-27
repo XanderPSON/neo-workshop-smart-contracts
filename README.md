@@ -15,7 +15,7 @@ Hands-on Foundry workshop for building a pari-mutuel prediction market in Solidi
 | `test/ERC20.t.sol` | **ERC-20 base tests** — pass out of the box |
 | `test/MyToken.t.sol` | **Your token's tests** — the `mint` tests fail until you finish the TODO |
 | `src/PredictionMarketV2.sol` | **V2 skeleton** — takes bets in your ERC-20; everything is wired except the body of `vote()` |
-| `test/PredictionMarketV2.t.sol` | **V2 tests** — allowance, balances, pools, resolved markets; the `vote` tests fail until you implement it |
+| `test/PredictionMarketV2.t.sol` | **V2 tests** — allowance, balances, pools, rollback on insufficient balance, resolved markets; the `vote` tests fail until you implement it |
 | `script/Deploy.s.sol` | **Deploy script** — deploys your PredictionMarket to Base Sepolia |
 | `script/DeployToken.s.sol` | **Deploy script** — deploys your `MyToken` |
 | `script/DeployV2.s.sol` | **Deploy script** — deploys `PredictionMarketV2` wired to `WORKSHOP_TOKEN_ADDRESS` |
