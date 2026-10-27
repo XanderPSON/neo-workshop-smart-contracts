@@ -14,8 +14,11 @@ Hands-on Foundry workshop for building a pari-mutuel prediction market in Solidi
 | `test/PredictionMarket.t.sol` | **Market tests** — 12 tests that validate your implementation |
 | `test/ERC20.t.sol` | **ERC-20 base tests** — pass out of the box |
 | `test/MyToken.t.sol` | **Your token's tests** — the `mint` tests fail until you finish the TODO |
+| `src/PredictionMarketV2.sol` | **V2 skeleton** — takes bets in your ERC-20; everything is wired except the body of `vote()` |
+| `test/PredictionMarketV2.t.sol` | **V2 tests** — allowance, balances, pools, resolved markets; the `vote` tests fail until you implement it |
 | `script/Deploy.s.sol` | **Deploy script** — deploys your PredictionMarket to Base Sepolia |
 | `script/DeployToken.s.sol` | **Deploy script** — deploys your `MyToken` |
+| `script/DeployV2.s.sol` | **Deploy script** — deploys `PredictionMarketV2` wired to `WORKSHOP_TOKEN_ADDRESS` |
 | `script/Rescue.s.sol` + `Makefile` | **`make rescue`** — deploys reference V1, a token, and V2 if you fall behind |
 | `solutions/` | **Reference solutions** — full implementations (don't peek unless stuck!) |
 
@@ -36,7 +39,15 @@ You get a complete ERC-20 base, so you spend your time on the parts that matter:
 2. Customize `src/MyToken.sol`: change the name, symbol, and initial supply in the constructor.
 3. Add one behavior: implement `mint` so only the owner can create new tokens.
 4. Run `forge test --match-contract MyTokenTest -vvv`. The two `test_mint_*` tests fail first; make them pass.
-5. Deploy with `script/DeployToken.s.sol`, then upgrade your market to V2 using your token address.
+5. Deploy with `script/DeployToken.s.sol` and save the address as `WORKSHOP_TOKEN_ADDRESS` in `.env`.
+
+### Part 3: Market V2 (ERC-20 bets)
+
+1. Open `src/PredictionMarketV2.sol`. The token, constructor, views, and owner functions are done; implement `vote()` with the allowance check and CEI order.
+2. Run `forge test --match-contract PredictionMarketV2Test -vvv` until it's green.
+3. Deploy with `script/DeployV2.s.sol` (it reads `WORKSHOP_TOKEN_ADDRESS`).
+
+The V2 lab assumes a trusted token: the supplied `ERC20` reverts on failure. In production, check `transferFrom`'s return value (or use OpenZeppelin's `SafeERC20`) and test reentrancy with a malicious token.
 
 <details>
 <summary>Alternative behavior: a supply cap instead of owner-only mint</summary>
@@ -103,15 +114,13 @@ forge test -vvv
 
 ## Deploy (Base Sepolia)
 
-Create and import a deployer wallet:
+The workshop uses a throwaway testnet key from `.env` (see `.env.example`):
 
 ```bash
-cast wallet new
-cast wallet import dev --private-key <PRIVATE_KEY>
+source .env
+forge script script/Deploy.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
 ```
 
-Broadcast deployment:
+Optional: add `--verify --verifier etherscan --etherscan-api-key "$ETHERSCAN_API_KEY"` to publish your source on BaseScan. Already deployed? Verify later with `forge verify-contract <address> src/PredictionMarket.sol:PredictionMarket --chain 84532 --constructor-args $(cast abi-encode "constructor(address)" "$WALLET_ADDRESS") --etherscan-api-key "$ETHERSCAN_API_KEY"`.
 
-```bash
-forge script Deploy --account dev --rpc-url https://sepolia.base.org --broadcast --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY
-```
+For anything holding real value, keep keys out of plaintext: use `cast wallet import dev --interactive` and `--account dev`, a hardware wallet, or a managed signer.
