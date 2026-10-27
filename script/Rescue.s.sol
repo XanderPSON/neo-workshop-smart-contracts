@@ -10,6 +10,7 @@ import {MyToken as RescueToken} from "../solutions/MyToken.sol";
 /// Deploys the REFERENCE PredictionMarket V1 (ETH), the reference ERC-20 token,
 /// and PredictionMarket V2 (wired to that token), then prints every address.
 ///
+/// Market 0 is created on V1 and V2 with QUESTION (env, optional).
 /// Usage:  make rescue          (reads PRIVATE_KEY and BASE_SEPOLIA_RPC from env or .env)
 /// Dry run: make rescue-dry     (simulates only, nothing is sent)
 contract Rescue is Script {
@@ -27,19 +28,26 @@ contract Rescue is Script {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         require(block.chainid == BASE_SEPOLIA || block.chainid == ANVIL, "Rescue: testnet only (Base Sepolia 84532)");
 
+        string memory question = vm.envOr("QUESTION", string("Will our pod ship a paid API by the end of Day 2?"));
+
         vm.startBroadcast(pk);
-        d = deployAll(vm.addr(pk));
+        d = deployAll(vm.addr(pk), question);
         vm.stopBroadcast();
 
         logDeployment(d);
     }
 
     /// @dev Separate from run() so tests can exercise the wiring without env vars.
-    function deployAll(address deployer) public returns (Deployment memory d) {
+    /// Seeds market 0 on V1 and V2 with `question` so the Day 2 dashboard has something to show.
+    function deployAll(address deployer, string memory question) public returns (Deployment memory d) {
         d.deployer = deployer;
-        d.v1 = address(new PredictionMarketV1(deployer));
+        PredictionMarketV1 v1 = new PredictionMarketV1(deployer);
+        d.v1 = address(v1);
         d.token = address(new RescueToken("NEO Rescue Token", "RESCUE", 1_000_000 ether));
-        d.v2 = address(new PredictionMarketV2(deployer, d.token));
+        PredictionMarketV2 v2 = new PredictionMarketV2(deployer, d.token);
+        d.v2 = address(v2);
+        v1.createMarket(question);
+        v2.createMarket(question);
     }
 
     function logDeployment(Deployment memory d) internal view {

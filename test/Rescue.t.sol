@@ -18,14 +18,17 @@ contract RescueTest is Test {
     }
 
     function test_deployAll_wiresContracts() public {
-        address deployer = address(0xD00D);
-        Rescue.Deployment memory d = rescue.deployAll(deployer);
+        // The script contract is the caller here, so it must own the markets to seed them.
+        address deployer = address(rescue);
+        Rescue.Deployment memory d = rescue.deployAll(deployer, "Will it ship?");
 
         assertEq(d.deployer, deployer);
         assertEq(PredictionMarketV1(d.v1).owner(), deployer);
         assertEq(PredictionMarketV2(d.v2).owner(), deployer);
         assertEq(address(PredictionMarketV2(d.v2).token()), d.token);
         assertEq(RescueToken(d.token).totalSupply(), 1_000_000 ether);
+        assertEq(PredictionMarketV1(d.v1).totalMarkets(), 1);
+        assertEq(PredictionMarketV2(d.v2).totalMarkets(), 1);
     }
 
     function test_v2_votesWithToken() public {
@@ -51,5 +54,6 @@ contract RescueTest is Test {
         assertEq(PredictionMarketV1(d.v1).owner(), d.deployer);
         assertEq(RescueToken(d.token).balanceOf(d.deployer), 1_000_000 ether);
         assertEq(RescueToken(d.token).owner(), d.deployer);
+        assertEq(PredictionMarketV2(d.v2).totalMarkets(), 1);
     }
 }
