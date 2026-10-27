@@ -2,7 +2,11 @@
 -include .env
 export
 
-.PHONY: build test fmt rescue rescue-dry check-env
+.PHONY: build test fmt rescue rescue-dry check-env preflight
+
+## Run before Day 1: checks Foundry, Node 22+, RPC, and your dev wallet balance.
+preflight:
+	@bash script/preflight.sh
 
 build:
 	forge build
