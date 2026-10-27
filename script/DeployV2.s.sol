@@ -2,20 +2,20 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {PredictionMarket} from "../src/PredictionMarket.sol";
+import {PredictionMarketV2} from "../src/PredictionMarketV2.sol";
 
-/// @notice Deploy PredictionMarket V2 (ERC-20 token version).
-/// Requires a deployed ERC-20 token address as constructor arg.
-/// Usage: forge script DeployV2 --account dev --rpc-url https://sepolia.base.org --broadcast --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY
+/// @notice Deploy PredictionMarket V2 (ERC-20 version) wired to your token.
+/// Reads WORKSHOP_TOKEN_ADDRESS from your shell or .env; you (msg.sender) become the owner.
+/// Usage: forge script script/DeployV2.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
 contract DeployV2 is Script {
-    function run() external {
+    function run() external returns (PredictionMarketV2 market) {
+        address tokenAddress = vm.envAddress("WORKSHOP_TOKEN_ADDRESS");
+
         vm.startBroadcast();
-
-        // TODO: Replace with your deployed ERC-20 token address
-        // address tokenAddress = 0x...;
-        // PredictionMarket market = new PredictionMarket(msg.sender, tokenAddress);
-        // console.log("PredictionMarket V2 deployed to:", address(market));
-
+        market = new PredictionMarketV2(msg.sender, tokenAddress);
         vm.stopBroadcast();
+
+        console.log("PredictionMarket V2 deployed to:", address(market));
+        console.log("Takes bets in token:", tokenAddress);
     }
 }
