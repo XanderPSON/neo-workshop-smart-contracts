@@ -31,7 +31,7 @@ Each clean run requires all tests to pass, deploys V1, two tokens, V2 and the re
 - Non-owner mint and no-allowance vote: exact custom-error selector, actual failed transaction receipt (not just a failed gas estimate), zero logs and unchanged token/market state.
 - Approval state, successful vote events, allowance consumption, a repeated vote on the opposite side, cumulative 15-token stake, escrow balance, 10/5 pools and the peer's debit.
 - Resolution state/outcome and a refused post-resolution vote even with sufficient allowance.
-- A fresh open V2 market (ID 1) for the frontend; market 0 is retained as the resolved evidence.
+- A fresh open V2 market (ID 1) for API-aware consumers; market 0 remains resolved evidence. The unmodified workshop dashboard hardcodes market 0, so this verified chain is **not plug-and-play with that dashboard**.
 
 `manifest.json` schema 1 exposes `rpcUrl`, `chainId`, `owner`, `peer`, `v1`, `token`, `peerToken`, `v2`, `openMarketId`, `resolvedMarketId`, test counts, state, and observed `tokens` metadata (`initialSupply` is a base-unit string). `receipts.json` retains receipts with status/logs/hash/block; build/test/deploy logs are beside it. `fixture.env` contains public configuration only. Retained output also includes disposable keystores and their public fixture password; keep it outside git. Receipt hashes, ports and timing may differ; asserted state and outcomes are deterministic.
 
@@ -44,7 +44,7 @@ python3 /path/to/contracts/script/prepare-instructor.py /tmp/NEW-completed-contr
 
 The destination must not exist and must be outside the contracts checkout. The helper copies only workshop inputs, links local forge-std, fills disposable exercise bodies/owner modifier, and customizes the fixture token constructor arguments. It starts no process and sends no transaction. The verifier uses the same functions. A scaffold-preservation test covers all other declarations/constructors. To check that copy without filling anything else, run `bash /tmp/NEW-completed-contracts/script/verify-workshop.sh completed`.
 
-Alternatively `bash script/verify-workshop.sh reference --output /tmp/NEW-live-fixture --serve --port 18545` holds its verified chain alive until Ctrl-C. The default port is dynamically chosen. Wait for `READY`, then read the manifest; only `--serve` keeps its RPC usable after the check. Stop the harness before resetting; each invocation uses a fresh directory and chain, never `anvil_reset` on someone else's RPC.
+Alternatively `bash script/verify-workshop.sh reference --output /tmp/NEW-live-fixture --serve --port 18545` holds its verified chain alive until Ctrl-C. The default port is dynamically chosen. Wait for `READY`, then read the manifest; only `--serve` keeps its RPC usable after the check. **Market 0 is resolved and the open market is ID 1.** For the unmodified dashboard, use the fullstack repository's `test:e2e` rehearsal: it reuses the completion helper but owns a fresh deployment with an open market 0 and its own Anvil/app lifecycle. Do not point that dashboard at this verifier's V2 expecting a successful vote. Stop the harness before resetting; each invocation uses a fresh directory and chain, never `anvil_reset` on someone else's RPC.
 
 ## Failure and recovery
 
