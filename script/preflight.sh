@@ -21,15 +21,12 @@ rpc="${BASE_SEPOLIA_RPC:-https://sepolia.base.org}"
 chain=$(cast chain-id --rpc-url "$rpc" 2>/dev/null || echo "")
 if [ "$chain" = "84532" ]; then ok "Base Sepolia RPC reachable ($rpc)"; else bad "RPC $rpc is not Base Sepolia (got '${chain:-no answer}')"; fi
 
-if [ -z "${PRIVATE_KEY:-}" ]; then
-  bad "PRIVATE_KEY not set: add your dev wallet key to .env (never a wallet with real funds)"
+if [[ ! "${WALLET_ADDRESS:-}" =~ ^0x[[:xdigit:]]{40}$ ]]; then
+  bad "WALLET_ADDRESS must be your public dev wallet address (no private key needed)"
 else
-  addr=$(cast wallet address --private-key "$PRIVATE_KEY" 2>/dev/null || echo "")
-  if [ -z "$addr" ]; then bad "PRIVATE_KEY is not a valid private key"; else
-    bal=$(cast balance "$addr" --rpc-url "$rpc" -e 2>/dev/null || echo 0)
-    if awk "BEGIN{exit !($bal >= 0.001)}"; then ok "Dev wallet $addr has $bal ETH"
-    else warn "Dev wallet $addr has $bal ETH: grab Base Sepolia ETH from a faucet (need ~0.001)"; fi
-  fi
+  bal=$(cast balance "$WALLET_ADDRESS" --rpc-url "$rpc" -e 2>/dev/null || echo 0)
+  if awk "BEGIN{exit !($bal >= 0.001)}"; then ok "Dev wallet $WALLET_ADDRESS has $bal ETH"
+  else warn "Dev wallet $WALLET_ADDRESS has $bal ETH: grab Base Sepolia ETH from a faucet (need ~0.001)"; fi
 fi
 
 echo

@@ -1,5 +1,7 @@
 # Compiler files
 cache/
+__pycache__/
+*.py[cod]
 out/
 
 # Ignores development broadcast logs

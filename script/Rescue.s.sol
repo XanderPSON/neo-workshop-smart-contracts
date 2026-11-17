@@ -11,7 +11,7 @@ import {MyToken as RescueToken} from "../solutions/MyToken.sol";
 /// and PredictionMarket V2 (wired to that token), then prints every address.
 ///
 /// Market 0 is created on V1 and V2 with QUESTION (env, optional).
-/// Usage:  make rescue          (reads PRIVATE_KEY and BASE_SEPOLIA_RPC from env or .env)
+/// Usage:  make rescue          (encrypted --account dev signer; BASE_SEPOLIA_RPC and WALLET_ADDRESS from env)
 /// Dry run: make rescue-dry     (simulates only, nothing is sent)
 contract Rescue is Script {
     uint256 internal constant BASE_SEPOLIA = 84532;
@@ -25,13 +25,13 @@ contract Rescue is Script {
     }
 
     function run() external returns (Deployment memory d) {
-        uint256 pk = vm.envUint("PRIVATE_KEY");
+        address deployer = msg.sender;
         require(block.chainid == BASE_SEPOLIA || block.chainid == ANVIL, "Rescue: testnet only (Base Sepolia 84532)");
 
         string memory question = vm.envOr("QUESTION", string("Will our pod ship a paid API by the end of Day 2?"));
 
-        vm.startBroadcast(pk);
-        d = deployAll(vm.addr(pk), question);
+        vm.startBroadcast(deployer);
+        d = deployAll(deployer, question);
         vm.stopBroadcast();
 
         logDeployment(d);

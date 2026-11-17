@@ -48,9 +48,23 @@ contract RescueTest is Test {
         assertEq(token.allowance(alice, address(market)), 0);
     }
 
-    function test_run_simulatesOnAnvilChain() public {
-        vm.setEnv("PRIVATE_KEY", "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+    function test_run_rejectsUnsupportedChain() public {
+        vm.chainId(1);
+        vm.expectRevert("Rescue: testnet only (Base Sepolia 84532)");
+        rescue.run();
+    }
+
+    function test_run_simulatesOnBaseSepolia() public {
+        vm.chainId(84532);
         Rescue.Deployment memory d = rescue.run();
+        assertEq(d.deployer, address(this));
+        assertEq(PredictionMarketV2(d.v2).owner(), address(this));
+        assertEq(RescueToken(d.token).balanceOf(address(this)), 1_000_000 ether);
+    }
+
+    function test_run_simulatesOnAnvilChain() public {
+        Rescue.Deployment memory d = rescue.run();
+        assertEq(d.deployer, address(this));
         assertEq(PredictionMarketV1(d.v1).owner(), d.deployer);
         assertEq(RescueToken(d.token).balanceOf(d.deployer), 1_000_000 ether);
         assertEq(RescueToken(d.token).owner(), d.deployer);

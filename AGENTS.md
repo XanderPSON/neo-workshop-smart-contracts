@@ -7,10 +7,9 @@ Participants clone the repo and implement function bodies in skeleton contracts.
 
 There are two phases:
 1. **Part 1** — Implement `PredictionMarket.sol` (ETH-based, satisfying the `IPredictionMarket` interface)
-2. **Part 2** — Customize `MyToken.sol` (inherits the supplied, complete `ERC20.sol`) and add owner-only `mint`
-3. **Part 3** — Implement only `vote()` in the supplied `PredictionMarketV2.sol` skeleton (ERC-20 bets via the allowance pattern), then deploy it with `DeployV2.s.sol`
+2. **Part 2** — Customize `MyToken.sol`, add owner-only `mint`, then implement only `vote()` in `PredictionMarketV2.sol` and deploy it with `DeployV2.s.sol`. Part 3 is the separate frontend workshop.
 
-Participants use Toshi, Coinbase's AI coding agent. Coach them: explain, point at the relevant spec or test, and let them write the code.
+Participants use Toshi, Coinbase's AI coding agent. Default to coaching: explain, point at the spec or test, and let them write. When explicitly asked to implement, follow that bounded request; preserve interfaces, supplied code, tests, and unrelated TODOs.
 
 ## Tech Stack
 
@@ -74,22 +73,26 @@ The test suite validates all interface requirements. Run `forge test -vvv` frequ
 On a fresh starter, `PredictionMarketTest`, the `test_mint_*` tests in `MyTokenTest`, and the `test_vote_*` tests in `PredictionMarketV2Test` fail by design; they pass once the participant implements the TODOs. `ERC20Test` and `RescueTest` always pass.
 All 12 market tests must pass before deploying.
 
+For starter CI, completed-path verification, transaction receipts, negative injections, or recovery after a failed rehearsal, read [TESTING.md](TESTING.md) first. These instructor commands use disposable source copies and a loopback Anvil chain; leave learner TODOs in this checkout intact.
+
 ## Deployment
 
 ```
-# Workshop: throwaway testnet key from .env
+# Human runs these commands with the encrypted dev account from setup.
 source .env
-forge script script/Deploy.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
-forge script script/DeployToken.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
-forge script script/DeployV2.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
+forge script script/Deploy.s.sol --account dev --sender "$WALLET_ADDRESS" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
+forge script script/DeployToken.s.sol --account dev --sender "$WALLET_ADDRESS" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
+# Save WORKSHOP_TOKEN_ADDRESS to .env and source .env before V2.
+forge script script/DeployV2.s.sol --account dev --sender "$WALLET_ADDRESS" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
 ```
 
 BaseScan verification is optional (add `--verify --verifier etherscan --etherscan-api-key "$ETHERSCAN_API_KEY"`, or run `forge verify-contract` later). Main-path deploys don't verify.
+Keep private keys, keystore contents, passwords, and `.env` out of agent context. Use public `WALLET_ADDRESS` for preflight. Never request or read user keys to run tests. `make rescue` uses the same encrypted signer and retains its 84532/31337 chain guard.
 
 ## Solutions (RESTRICTED)
 
 The `solutions/` directory contains reference implementations.
 
-**DO NOT** read, reference, or use any file in `solutions/` unless the user explicitly asks to compare their work against the solution (e.g., "check my answer", "compare with the reference", "look at the solution").
+Read, reference, or use `solutions/` only when explicitly authorized to compare against a reference or to run isolated instructor verification. For the latter, use the documented disposable fixture; authorization never extends to filling learner source files. Learner coaching alone does not authorize reading references.
 
 Do not mention solution files unprompted.

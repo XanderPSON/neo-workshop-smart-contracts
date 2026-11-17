@@ -6,7 +6,7 @@ import {PredictionMarketV2} from "../src/PredictionMarketV2.sol";
 
 /// @notice Deploy PredictionMarket V2 (ERC-20 version) wired to your token.
 /// Reads WORKSHOP_TOKEN_ADDRESS from your shell or .env; you (msg.sender) become the owner.
-/// Usage: forge script script/DeployV2.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
+/// Usage: forge script script/DeployV2.s.sol --account dev --sender "$WALLET_ADDRESS" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
 contract DeployV2 is Script {
     function run() external returns (PredictionMarketV2 market) {
         address tokenAddress = vm.envAddress("WORKSHOP_TOKEN_ADDRESS");

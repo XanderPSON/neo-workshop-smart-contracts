@@ -5,7 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {PredictionMarket} from "../src/PredictionMarket.sol";
 
 /// @notice Deploy PredictionMarket V1 (ETH-based).
-/// Usage: forge script script/Deploy.s.sol --private-key "$PRIVATE_KEY" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
+/// Usage: forge script script/Deploy.s.sol --account dev --sender "$WALLET_ADDRESS" --rpc-url "$BASE_SEPOLIA_RPC" --broadcast
 contract Deploy is Script {
     function run() external {
         address deployer = msg.sender;
