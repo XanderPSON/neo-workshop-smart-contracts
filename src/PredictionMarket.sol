@@ -20,11 +20,11 @@ import {IPredictionMarket} from "./IPredictionMarket.sol";
 contract PredictionMarket is IPredictionMarket {
     // === TYPES & STRUCTS ===
     struct Market {
-        string question;       // e.g., "Will it rain tomorrow?"
-        uint256 yesPool;       // Total wei staked on YES
-        uint256 noPool;        // Total wei staked on NO
-        bool resolved;         // Has the market been resolved?
-        bool outcome;          // true = YES won, false = NO won
+        string question; // e.g., "Will it rain tomorrow?"
+        uint256 yesPool; // Total wei staked on YES
+        uint256 noPool; // Total wei staked on NO
+        bool resolved; // Has the market been resolved?
+        bool outcome; // true = YES won, false = NO won
     }
 
     // === STORAGE VARIABLES ===

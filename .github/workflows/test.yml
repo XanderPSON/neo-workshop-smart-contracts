@@ -5,39 +5,29 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  FOUNDRY_PROFILE: ci
-
 jobs:
   check:
-    strategy:
-      fail-fast: true
-
-    name: Foundry project
+    name: Starter and isolated completed path
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Install Foundry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned Foundry
         uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Show Forge version
-        run: |
-          forge --version
-
-      - name: Run Forge fmt
-        run: |
-          forge fmt --check
-        id: fmt
-
-      - name: Run Forge build
-        run: |
-          forge build --sizes
-        id: build
-
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+        with:
+          version: v1.3.5
+      - name: Format
+        run: forge fmt --check
+      # Setup may download the pinned solc compiler; verification below is offline.
+      - name: Build and cache compiler
+        run: forge build --sizes
+      - name: Verify exact intentional TODO failures and supplied base
+        run: bash script/verify-workshop.sh starter
+      - name: Verify isolated completed path and local transaction receipts
+        run: bash script/verify-workshop.sh reference
+      - name: Prove regressions are rejected
+        run: python3 script/test_verification.py
